@@ -1,0 +1,51 @@
+﻿@page "/bbc-zh-home"
+
+@using Diademos.Data
+@using CodeHollow.FeedReader;
+@using System.Web;
+
+<head>
+    <title>BBC Chinese</title>
+</head>
+
+<h1>BBC Chinese</h1>
+
+@if (newsArticles == null)
+{
+    <p><em>Loading...</em></p>
+}
+else
+{
+
+    <div class="feedBody">
+        @foreach (var article in newsArticles)
+        {
+            <a href=@article.URL>
+                <div class="newsEntry">
+                    <p class="articleDate">@article.DatePublished</p>
+                    <p class="articleTitle">@article.Title</p>
+                    <div class="articleThumbBox">@((MarkupString)article.Thumbnail)</div>
+                    <p class="articleSummary">@article.Summary</p>
+                    <!--<div>@((MarkupString)article.Contents)</div>-->
+                    <p class="articleTags">
+                        @foreach (var tag in article.Tags)
+                        {
+                        <p class="articleTag">tag</p>
+                    }
+                        </p>
+                    </div>
+                <br />
+            </a>
+        }
+    </div>
+
+}
+
+@code {
+    Article[] newsArticles;
+    
+    protected override async Task OnInitializedAsync()
+    {
+        newsArticles = await News.GetArticlesAsync("http://feeds.bbci.co.uk/zhongwen/simp/rss.xml", "BBC Chinese");
+    }
+}

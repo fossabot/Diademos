@@ -9,6 +9,8 @@ namespace Diademos.Data
     {
         public DateTime DatePublished { get; set; }
 
+        public String Title { get; set; }
+
         public string Publisher { get; set; }
 
         public string Author { get; set; }
@@ -17,8 +19,10 @@ namespace Diademos.Data
 
         public string Contents { get; set; }
 
+        public string Thumbnail { get; set; }
+
         public string URL { get; set; }
 
-        public string Tags { get; set; }
+        public ICollection<string> Tags { get; set; }
     }
 }

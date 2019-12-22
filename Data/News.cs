@@ -4,39 +4,116 @@ using System.Linq;
 using System.Threading.Tasks;
 using RestSharp;
 using Newtonsoft.Json;
+using CodeHollow.FeedReader;
+using System.Net;
+using HtmlAgilityPack;
+using System.Net.Http;
+using System.IO;
+using System.Text;
 
 namespace Diademos.Data
 {
     public class News
     {
-        public Task<Article[]> GetArticlesAsync(String query, int feedInd)
+        public static String[] BBCParse(string url)
         {
-
-            var client = new RestClient("https://search-news-feed.p.rapidapi.com/articles?q=" + query);
-            var request = new RestRequest(Method.GET);
-            request.AddHeader("x-rapidapi-host", "search-news-feed.p.rapidapi.com");
-            request.AddHeader("x-rapidapi-key", "c594e3fb9emsh95f74bae064e059p1e1959jsnc4df23dcc4ef");
-            IRestResponse response = client.Execute(request);
-            Article currentArticle = JsonConvert.DeserializeObject<Article>(response.ToString());
-
-            var client = new RestClient("https://saidimu-newscuria-v1.p.rapidapi.com/url/tags/");
-            var request = new RestRequest(Method.POST);
-            request.AddHeader("x-rapidapi-host", "saidimu-newscuria-v1.p.rapidapi.com");
-            request.AddHeader("x-rapidapi-key", "ca56a08701msh032249109e6f378p138b70jsnf57cd4f98f52");
-            request.AddHeader("content-type", "application/x-www-form-urlencoded");
-            request.AddParameter("application/x-www-form-urlencoded", "url=" + currentArticle.link, ParameterType.RequestBody);
-            IRestResponse response = client.Execute(request);
-
-            return Task.FromResult(Enumerable.Range(feedInd, feedInd + 10).Select(index => new Article
+            using (WebClient client = new WebClient())
             {
-                Date = currentArticle.published,
-                Publisher = currentArticle.source,
-                Author = currentArticle.author,
-                Summary = currentArticle.summary,
-                Contents = ,
-                URL = currentArticle.link,
-                Tags = ,
-            }).ToArray());
+                string pageContents = client.DownloadString(url);
+                HtmlDocument doc = new HtmlDocument();
+                doc.LoadHtml(pageContents);
+                var nodesImg = doc.DocumentNode.SelectNodes("//img[@class='js-image-replace']");
+                //var nodesImg = doc.DocumentNode.SelectNodes("//img");
+                var nodesArticle = doc.DocumentNode.SelectNodes("//div[@class='story-body__inner']");
+                //var nodesHead = doc.DocumentNode.SelectNodes("/head");
+                if (nodesImg != null && nodesArticle == null)
+                {
+                    var imgList = nodesImg.Select(x => x.OuterHtml).ToList();
+                    return new string[] { "", imgList[0] };
+                }
+                else if (nodesArticle != null && nodesImg == null)
+                {
+                    var articleContents = nodesArticle.Select(x => x.OuterHtml).ToList();
+                    return new string[] { articleContents[0], "" };
+                }
+                else if (nodesArticle == null && nodesImg == null)
+                {
+                    return new string[] { "", "" };
+                }
+                else
+                {
+                    var imgList = nodesImg.Select(x => x.OuterHtml).ToList();
+                    var articleContents = nodesArticle.Select(x => x.OuterHtml).ToList();
+                    if (imgList[0].Equals(""))
+                    {
+                        foreach(var img in imgList)
+                        {
+                            if (!img.Equals(""))
+                            {
+                                return new string[] { articleContents[0], img };
+                            }
+                        }
+                    }
+                        return new string[] { articleContents[0], imgList[0] };
+                    
+                    
+                    
+                }
+
+                
+            }
+        }
+            
+        
+
+        [Obsolete]
+        public static Task<Article[]> GetArticlesAsync(String feedUrl, String publisher)
+        {
+            List<Article> articlesList = new List<Article>();
+            var feed = FeedReader.Read(feedUrl);
+
+            foreach (var item in feed.Items)
+            {
+                if (!item.Title.Equals("BBC中文合作伙伴"))
+                {
+                    if (publisher.Equals("BBC Chinese") || publisher.Equals("BBC News"))
+                    {
+                        articlesList.Add(new Article { Contents = BBCParse(item.Link)[0], Thumbnail = BBCParse(item.Link)[1], Publisher = publisher, URL = item.Link, Title = item.Title, Author = item.Author, DatePublished = (System.DateTime)item.PublishingDate, Summary = item.Description, Tags = item.Categories });
+                    }
+                    else
+                    {
+                        articlesList.Add(new Article { Publisher = publisher, URL = item.Link, Title = item.Title, Author = item.Author, DatePublished = (System.DateTime)item.PublishingDate, Contents = item.Content, Summary = item.Description, Tags = item.Categories });
+                    }
+                    //articlesList.Add(new Article { Publisher = publisher, URL = item.Link, Title = item.Title, Author = item.Author, DatePublished = (System.DateTime) item.PublishingDate, Contents = item.Content, Summary = item.Description, Tags = item.Categories });
+                }
+
+
+
+
+                /*
+                string pageContents = String.Empty;
+                HttpWebRequest request = (HttpWebRequest)WebRequest.Create(item.Link);
+                request.AutomaticDecompression = DecompressionMethods.GZip;
+                using (HttpWebResponse response = (HttpWebResponse)request.GetResponse())
+                using (Stream responseStream = response.GetResponseStream())
+                using (StreamReader streamReader = new StreamReader(responseStream))
+                {
+                    pageContents = streamReader.ReadToEnd();
+                }
+                if (publisher.Equals("BBC Chinese") || publisher.Equals("BBC News"))
+                {
+                    BBCParse(pageContents);
+                    articlesList.Add(new Article { Contents = BBCParse(pageContents)[0], Thumbnail = BBCParse(pageContents)[1], Publisher = publisher, URL = item.Link, Title = item.Title, Author = item.Author, DatePublished = (System.DateTime)item.PublishingDate, Summary = item.Description, Tags = item.Categories });
+                }
+                else
+                {
+                    articlesList.Add(new Article { Publisher = publisher, URL = item.Link, Title = item.Title, Author = item.Author, DatePublished = (System.DateTime)item.PublishingDate, Contents = item.Content, Summary = item.Description, Tags = item.Categories });
+                }
+                */
+                //articlesList.Add(new Article { Publisher = publisher, URL = item.Link, Title = item.Title, Author = item.Author, DatePublished = (System.DateTime) item.PublishingDate, Contents = item.Content, Summary = item.Description, Tags = item.Categories });
+            }
+
+            return Task.FromResult(articlesList.ToArray());
         }
     }
 }
