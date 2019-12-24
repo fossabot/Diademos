@@ -1,14 +1,14 @@
-﻿@page "/bbc-zh-home"
+﻿@page "/bbc-zh-fooc-tw"
 
 @using Diademos.Data
 @using CodeHollow.FeedReader;
 @using System.Web;
 
 <head>
-    <title>BBC Chinese</title>
+    <title>Reports</title>
 </head>
 
-<h1>BBC Chinese</h1>
+<h1>BBC Chinese (Traditional)</h1>
 
 @if (newsArticles == null)
 {
@@ -30,10 +30,10 @@ else
                     <p class="articleTags">
                         @foreach (var tag in article.Tags)
                         {
-                        <p class="articleTag">@tag</p>
-                    }
-                        </p>
-                    </div>
+                            <p class="articleTag">@tag</p>
+                        }
+                    </p>
+                </div>
                 <br />
             </a>
         }
@@ -46,6 +46,6 @@ else
     
     protected override async Task OnInitializedAsync()
     {
-        newsArticles = await News.GetArticlesAsync("http://feeds.bbci.co.uk/zhongwen/simp/rss.xml", "BBC Chinese");
+        newsArticles = await News.GetArticlesAsync("http://www.bbc.co.uk/zhongwen/trad/fooc/index.xml", "BBC Chinese");
     }
 }

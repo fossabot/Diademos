@@ -124,9 +124,15 @@ app {
 
     .sidebar {
         width: 250px;
-        height: 100vh;
+        //height: 100vh;
+        height: 100%;
         position: sticky;
         top: 0;
+    }
+
+    img.js-image-replace{
+        width: auto;
+        height: auto;
     }
 
     .main .top-row {

@@ -29,6 +29,14 @@ namespace Diademos
             services.AddRazorPages();
             services.AddServerSideBlazor();
             services.AddSingleton<WeatherForecastService>();
+            services.AddSingleton<News>();
+            services.AddSignalR(e =>
+
+            {
+
+                e.MaximumReceiveMessageSize = 67108864;
+
+            });
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.

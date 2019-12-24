@@ -1,14 +1,14 @@
-﻿@page "/bbc-zh-home"
+﻿@page "/bbc-zh-china"
 
 @using Diademos.Data
 @using CodeHollow.FeedReader;
 @using System.Web;
 
 <head>
-    <title>BBC Chinese</title>
+    <title>China</title>
 </head>
 
-<h1>BBC Chinese</h1>
+<h1>BBC Chinese (Simplified)</h1>
 
 @if (newsArticles == null)
 {
@@ -46,6 +46,6 @@ else
     
     protected override async Task OnInitializedAsync()
     {
-        newsArticles = await News.GetArticlesAsync("http://feeds.bbci.co.uk/zhongwen/simp/rss.xml", "BBC Chinese");
+        newsArticles = await News.GetArticlesAsync("http://www.bbc.co.uk/zhongwen/simp/china/index.xml", "BBC Chinese");
     }
 }
