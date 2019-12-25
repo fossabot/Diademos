@@ -67,11 +67,34 @@ namespace Diademos.Data
         
 
         [Obsolete]
-        public static Task<Article[]> GetArticlesAsync(String feedUrl, String publisher)
+        public static Task<Article[]> GetArticlesAsync(String feedUrl, String publisher, int feedInd, int numOnPage)
         {
             List<Article> articlesList = new List<Article>();
             var feed = FeedReader.Read(feedUrl);
 
+            for (int i = feedInd; i < feedInd + numOnPage; i++)
+            {
+                if (feedInd == feed.Items.Count - 1)
+                {
+                    return Task.FromResult(articlesList.ToArray());
+                }
+                else
+                {
+                    if (!feed.Items.ElementAt(i).Title.Equals("BBC中文合作伙伴"))
+                    {
+                        if (publisher.Equals("BBC Chinese") || publisher.Equals("BBC News"))
+                        {
+                            articlesList.Add(new Article { Contents = BBCParse(feed.Items.ElementAt(i).Link)[0], Thumbnail = BBCParse(feed.Items.ElementAt(i).Link)[1], Publisher = publisher, URL = feed.Items.ElementAt(i).Link, Title = feed.Items.ElementAt(i).Title, Author = feed.Items.ElementAt(i).Author, DatePublished = (System.DateTime)feed.Items.ElementAt(i).PublishingDate, Summary = feed.Items.ElementAt(i).Description, Tags = feed.Items.ElementAt(i).Categories });
+                        }
+                        else
+                        {
+                            articlesList.Add(new Article { Publisher = publisher, URL = feed.Items.ElementAt(i).Link, Title = feed.Items.ElementAt(i).Title, Author = feed.Items.ElementAt(i).Author, DatePublished = (System.DateTime)feed.Items.ElementAt(i).PublishingDate, Contents = feed.Items.ElementAt(i).Content, Summary = feed.Items.ElementAt(i).Description, Tags = feed.Items.ElementAt(i).Categories });
+                        }
+                    }
+                }
+            }
+
+            /*
             foreach (var item in feed.Items)
             {
                 if (!item.Title.Equals("BBC中文合作伙伴"))
@@ -86,6 +109,7 @@ namespace Diademos.Data
                     }
                     //articlesList.Add(new Article { Publisher = publisher, URL = item.Link, Title = item.Title, Author = item.Author, DatePublished = (System.DateTime) item.PublishingDate, Contents = item.Content, Summary = item.Description, Tags = item.Categories });
                 }
+            */
 
 
 
@@ -111,7 +135,7 @@ namespace Diademos.Data
                 }
                 */
                 //articlesList.Add(new Article { Publisher = publisher, URL = item.Link, Title = item.Title, Author = item.Author, DatePublished = (System.DateTime) item.PublishingDate, Contents = item.Content, Summary = item.Description, Tags = item.Categories });
-            }
+            //}
 
             return Task.FromResult(articlesList.ToArray());
         }

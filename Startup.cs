@@ -10,6 +10,8 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Diademos.Data;
+using Microsoft.AspNetCore.SignalR;
+using Microsoft.AspNetCore.Http.Connections;
 
 namespace Diademos
 {
@@ -35,7 +37,6 @@ namespace Diademos
             {
 
                 e.MaximumReceiveMessageSize = 67108864;
-
             });
         }
 
@@ -58,9 +59,23 @@ namespace Diademos
 
             app.UseRouting();
 
+            /*
             app.UseEndpoints(endpoints =>
             {
                 endpoints.MapBlazorHub();
+                endpoints.MapFallbackToPage("/_Host");            
+            });
+            */
+            app.UseEndpoints(endpoints =>
+            {
+                endpoints.MapBlazorHub(options =>
+                {
+                    options.Transports =
+                        HttpTransportType.WebSockets |
+                        HttpTransportType.LongPolling;
+                    options.ApplicationMaxBufferSize = 67108864;
+                    options.LongPolling.PollTimeout = new System.TimeSpan(0, 0, 10);
+                });
                 endpoints.MapFallbackToPage("/_Host");
             });
         }

@@ -16,6 +16,8 @@
 }
 else
 {
+    <button @onclick="@ShowLess">-</button>
+    <button @onclick="@ShowMore">+</button>
 
     <div class="feedBody">
         @foreach (var article in newsArticles)
@@ -43,9 +45,26 @@ else
 
 @code {
     Article[] newsArticles;
+    int feedInd = 0;
+	int numOnPage = 2;
+
+        void ShowMore()
+    {
+        feedInd += 10;
+		OnInitializedAsync();
+    }
+	void ShowLess()
+    {
+		if(feedInd >= 10){
+			feedInd -= 10;
+			OnInitializedAsync();
+		}
+    }
+
+
     
     protected override async Task OnInitializedAsync()
     {
-        newsArticles = await News.GetArticlesAsync("http://www.bbc.co.uk/zhongwen/simp/taiwan_letters/index.xml", "BBC Chinese");
+        newsArticles = await News.GetArticlesAsync("http://www.bbc.co.uk/zhongwen/simp/taiwan_letters/index.xml", "BBC Chinese", feedInd, numOnPage);
     }
 }
