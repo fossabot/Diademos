@@ -37,6 +37,8 @@ namespace Diademos
             {
 
                 e.MaximumReceiveMessageSize = 67108864;
+                e.StreamBufferCapacity = 67108864;
+                e.EnableDetailedErrors = true;
             });
         }
 

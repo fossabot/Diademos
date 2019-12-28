@@ -1,0 +1,95 @@
+﻿@inherits LayoutComponentBase
+
+@using Diademos.Data
+@using CodeHollow.FeedReader;
+@using System.Web;
+
+<h1>@Brand - @Category</h1>
+
+@if (newsArticles == null)
+{
+<div class="sk-cube-grid">
+    <div class="sk-cube sk-cube1"></div>
+    <div class="sk-cube sk-cube2"></div>
+    <div class="sk-cube sk-cube3"></div>
+    <div class="sk-cube sk-cube4"></div>
+    <div class="sk-cube sk-cube5"></div>
+    <div class="sk-cube sk-cube6"></div>
+    <div class="sk-cube sk-cube7"></div>
+    <div class="sk-cube sk-cube8"></div>
+    <div class="sk-cube sk-cube9"></div>
+</div>
+<style>
+</style>
+}
+else
+{
+    <button @onclick="@ShowLess">-</button>
+    <button @onclick="@ShowMore">+</button>
+
+    <div class="feedBody">
+        @foreach (var article in newsArticles)
+        {
+            <a href=@article.URL>
+                <div class="newsEntry">
+                    <p class="articleDate">@article.DatePublished</p>
+                    <p class="articleTitle">@article.Title</p>
+                    <div class="articleThumbBox">@((MarkupString)article.Thumbnail)</div>
+                    <p class="articleSummary">@article.Summary</p>
+                    <!--<div>@((MarkupString)article.Contents)</div>-->
+                    <p class="articleTags">
+                        @foreach (var tag in article.Tags)
+                        {
+                            <p class="articleTag">@tag</p>
+                        }
+                    </p>
+                    </div>
+                    <br />
+                </a>
+            }
+    </div>
+
+}
+
+@code {
+    Article[] newsArticles;
+    int feedInd = 0;
+    [Parameter]
+    public string publisherName { get; set; }
+    [Parameter]
+    public string feedUrl { get; set; }
+    [Parameter]
+    public int numOnPage { get; set; }
+    [Parameter]
+    public string Brand { get; set; }
+    [Parameter]
+    public string Category { get; set; }
+
+    async void ShowMore()
+    {
+        feedInd += numOnPage;
+        await OnParametersSetAsync();
+    }
+    async void ShowLess()
+    {
+        if (feedInd >= numOnPage)
+        {
+            feedInd -= numOnPage;
+            await OnParametersSetAsync();
+        }
+    }
+
+    protected override bool ShouldRender()
+    {
+        var renderUI = true;
+
+        return renderUI;
+    }
+
+    protected override async Task OnParametersSetAsync()
+    {
+
+        newsArticles = await News.GetArticlesAsync(feedUrl, publisherName, feedInd, numOnPage);
+
+    }
+}
