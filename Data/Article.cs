@@ -24,5 +24,10 @@ namespace Diademos.Data
         public string URL { get; set; }
 
         public ICollection<string> Tags { get; set; }
+
+        public double VeritabilityRating { get; set; }
+
+        public int MoodPolarity { get; set; }
+
     }
 }
