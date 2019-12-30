@@ -21,8 +21,8 @@
 }
 else
 {
-    <button @onclick="@ShowLess">-</button>
-    <button @onclick="@ShowMore">+</button>
+    <button @onclick="@Previous">🠔</button>
+    <button @onclick="@Next">🠖</button>
 
     <div class="feedBody">
         @foreach (var article in newsArticles)
@@ -67,12 +67,12 @@ else
 
     string viewLink;
 
-    async void ShowMore()
+    async void Next()
     {
         feedInd += numOnPage;
         await OnParametersSetAsync();
     }
-    async void ShowLess()
+    async void Previous()
     {
         if (feedInd >= numOnPage)
         {
