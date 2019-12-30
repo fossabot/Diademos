@@ -1,26 +1,23 @@
 ﻿@inherits LayoutComponentBase
 
 @using Diademos.Data
-@using CodeHollow.FeedReader;
 @using System.Web;
 
 <h1>@Brand - @Category</h1>
 
 @if (newsArticles == null)
 {
-<div class="sk-cube-grid">
-    <div class="sk-cube sk-cube1"></div>
-    <div class="sk-cube sk-cube2"></div>
-    <div class="sk-cube sk-cube3"></div>
-    <div class="sk-cube sk-cube4"></div>
-    <div class="sk-cube sk-cube5"></div>
-    <div class="sk-cube sk-cube6"></div>
-    <div class="sk-cube sk-cube7"></div>
-    <div class="sk-cube sk-cube8"></div>
-    <div class="sk-cube sk-cube9"></div>
-</div>
-<style>
-</style>
+    <div class="sk-cube-grid">
+        <div class="sk-cube sk-cube1"></div>
+        <div class="sk-cube sk-cube2"></div>
+        <div class="sk-cube sk-cube3"></div>
+        <div class="sk-cube sk-cube4"></div>
+        <div class="sk-cube sk-cube5"></div>
+        <div class="sk-cube sk-cube6"></div>
+        <div class="sk-cube sk-cube7"></div>
+        <div class="sk-cube sk-cube8"></div>
+        <div class="sk-cube sk-cube9"></div>
+    </div>
 }
 else
 {
@@ -29,8 +26,10 @@ else
 
     <div class="feedBody">
         @foreach (var article in newsArticles)
-        {
-            <a href=@article.URL>
+         {
+            articleInd++;
+            viewLink = "/view/" + HttpUtility.UrlEncode(@publisherName).Replace("+", "%20") + "/" + HttpUtility.UrlEncode(@feedUrl) + "/" + @articleInd;
+            <NavLink href=@viewLink>
                 <div class="newsEntry">
                     <p class="articleDate">@article.DatePublished</p>
                     <p class="articleTitle">@article.Title</p>
@@ -43,16 +42,17 @@ else
                             <p class="articleTag">@tag</p>
                         }
                     </p>
-                    </div>
-                    <br />
-                </a>
-            }
+                </div>
+                <br />
+            </NavLink>
+         }
     </div>
 
 }
 
 @code {
     Article[] newsArticles;
+    int articleInd = -1;
     int feedInd = 0;
     [Parameter]
     public string publisherName { get; set; }
@@ -64,6 +64,8 @@ else
     public string Brand { get; set; }
     [Parameter]
     public string Category { get; set; }
+
+    string viewLink;
 
     async void ShowMore()
     {
@@ -90,6 +92,5 @@ else
     {
 
         newsArticles = await News.GetArticlesAsync(feedUrl, publisherName, feedInd, numOnPage);
-
     }
 }

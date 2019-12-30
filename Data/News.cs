@@ -10,12 +10,64 @@ using HtmlAgilityPack;
 using System.Net.Http;
 using System.IO;
 using System.Text;
+using System.Web;
+using System.Diagnostics;
+using Microsoft.JSInterop;
 
 namespace Diademos.Data
 {
     public class News
     {
 
+        public static Task<string[]> GetArticleCSS(string pageContents, string publisher)
+        {
+            if (publisher.Equals("BBC Chinese") || publisher.Equals("BBC News"))
+            {
+                HtmlDocument doc = new HtmlDocument();
+                doc.LoadHtml(pageContents);
+                List<string> styleData = new List<string>();
+                var nodesStyleLinks = doc.DocumentNode.SelectNodes("//link/@href");
+                var nodesStyleTags = doc.DocumentNode.SelectNodes("//style");
+                var linkTags = nodesStyleLinks.Select(x => x.OuterHtml).ToList();
+                var styleTags = nodesStyleTags.Select(x => x.OuterHtml).ToList();
+                foreach(var linkTag in linkTags)
+                {
+                    styleData.Add(linkTag);
+                }
+                foreach(var styleTag in styleTags)
+                {
+                    styleData.Add(styleTag);
+                }
+                return Task.FromResult(styleData.ToArray());
+            }
+            else
+            {
+                return Task.FromResult(Array.Empty<string>());
+            }
+        }
+
+        [Obsolete]
+        public static Task<string[]> GetArticleUrls(string feedUrl)
+        {
+            List<string> articleUrlList = new List<string>();
+            var feed = FeedReader.Read(HttpUtility.UrlDecode(feedUrl));
+            foreach (var item in feed.Items)
+            {
+                articleUrlList.Add(item.Link);
+            }
+            return Task.FromResult(articleUrlList.ToArray());
+        }
+        public static Task<string> GetContents(string url, string publisher)
+        {
+            if (publisher.Equals("BBC Chinese") || publisher.Equals("BBC News"))
+            {
+                return Task.FromResult("<head>\n" + BBCParse(GetResponseString(url))[2] + "</head>\n" + BBCParse(GetResponseString(url))[0]);
+            }
+            else
+            {
+                return Task.FromResult(GetResponseString(url));
+            }
+        }
         public static string GetResponseString(string url)
         {
             using WebClient client = new WebClient();
@@ -28,8 +80,8 @@ namespace Diademos.Data
             doc.LoadHtml(pageContents);
             var nodesImg = doc.DocumentNode.SelectNodes("//img[@class='js-image-replace']");
             //var nodesImg = doc.DocumentNode.SelectNodes("//img");
-            var nodesArticle = doc.DocumentNode.SelectNodes("//div[@class='story-body__inner']");
-            //var nodesHead = doc.DocumentNode.SelectNodes("/head");
+            var nodesArticle = doc.DocumentNode.SelectNodes("//div[@class='story-body__inner']//*[not(@class = 'story-image-copyright')]");
+            var nodesHead = doc.DocumentNode.SelectNodes("//head");
             if (nodesImg != null && nodesArticle == null)
             {
                 var imgList = nodesImg.Select(x => x.OuterHtml).ToList();
@@ -48,6 +100,7 @@ namespace Diademos.Data
             {
                 var imgList = nodesImg.Select(x => x.OuterHtml).ToList();
                 var articleContents = nodesArticle.Select(x => x.OuterHtml).ToList();
+                var head = nodesHead.Select(x => x.OuterHtml).ToList();
                 if (imgList[0].Equals(""))
                 {
                     foreach (var img in imgList)
@@ -58,7 +111,7 @@ namespace Diademos.Data
                         }
                     }
                 }
-                return new string[] { articleContents[0], imgList[0] };
+                return new string[] { articleContents[0], imgList[0], head[0] };
 
 
 
@@ -71,33 +124,33 @@ namespace Diademos.Data
         public static Task<Article[]> GetArticlesAsync(String feedUrl, String publisher, int feedInd, int numOnPage)
         {
             List<Article> articlesList = new List<Article>();
-            var feed = FeedReader.Read(feedUrl);
+            var feed = FeedReader.ReadAsync(feedUrl);
 
             for (int i = feedInd; i < feedInd + numOnPage; i++)
             {
-                string pageContents = GetResponseString(feed.Items.ElementAt(i).Link);
-                if (feedInd == feed.Items.Count - 1)
+                string pageContents = GetResponseString(feed.Result.Items.ElementAt(i).Link);
+                if (feedInd == feed.Result.Items.Count - 1)
                 {
                     return Task.FromResult(articlesList.ToArray());
                 }
                 else
                 {
-                    if (!feed.Items.ElementAt(i).Title.Equals("BBC中文合作伙伴"))
+                    if (!feed.Result.Items.ElementAt(i).Title.Equals("BBC中文合作伙伴"))
                     {
                         if (publisher.Equals("BBC Chinese") || publisher.Equals("BBC News"))
                         {
-                            articlesList.Add(new Article { Contents = BBCParse(pageContents)[0], Thumbnail = BBCParse(pageContents)[1], Publisher = publisher, URL = feed.Items.ElementAt(i).Link, Title = feed.Items.ElementAt(i).Title, Author = feed.Items.ElementAt(i).Author, DatePublished = (System.DateTime)feed.Items.ElementAt(i).PublishingDate, Summary = feed.Items.ElementAt(i).Description, Tags = feed.Items.ElementAt(i).Categories });
+                            articlesList.Add(new Article { Contents = BBCParse(pageContents)[0], Thumbnail = BBCParse(pageContents)[1], Publisher = publisher, URL = feed.Result.Items.ElementAt(i).Link, Title = feed.Result.Items.ElementAt(i).Title, Author = feed.Result.Items.ElementAt(i).Author, DatePublished = (System.DateTime)feed.Result.Items.ElementAt(i).PublishingDate, Summary = feed.Result.Items.ElementAt(i).Description, Tags = feed.Result.Items.ElementAt(i).Categories });
                         }
                         else
                         {
-                            articlesList.Add(new Article { Publisher = publisher, URL = feed.Items.ElementAt(i).Link, Title = feed.Items.ElementAt(i).Title, Author = feed.Items.ElementAt(i).Author, DatePublished = (System.DateTime)feed.Items.ElementAt(i).PublishingDate, Contents = feed.Items.ElementAt(i).Content, Summary = feed.Items.ElementAt(i).Description, Tags = feed.Items.ElementAt(i).Categories });
+                            articlesList.Add(new Article { Publisher = publisher, URL = feed.Result.Items.ElementAt(i).Link, Title = feed.Result.Items.ElementAt(i).Title, Author = feed.Result.Items.ElementAt(i).Author, DatePublished = (System.DateTime)feed.Result.Items.ElementAt(i).PublishingDate, Contents = feed.Result.Items.ElementAt(i).Content, Summary = feed.Result.Items.ElementAt(i).Description, Tags = feed.Result.Items.ElementAt(i).Categories });
                         }
                     }
                 }
             }
 
             /*
-            foreach (var item in feed.Items)
+            foreach (var item in feed.Result.Items)
             {
                 if (!item.Title.Equals("BBC中文合作伙伴"))
                 {
@@ -146,32 +199,32 @@ namespace Diademos.Data
         public static Article[] GetArticles(String feedUrl, String publisher, int feedInd, int numOnPage)
         {
             List<Article> articlesList = new List<Article>();
-            var feed = FeedReader.Read(feedUrl);
+            var feed = FeedReader.ReadAsync(feedUrl);
 
             for (int i = feedInd; i < feedInd + numOnPage; i++)
             {
-                if (feedInd == feed.Items.Count - 1)
+                if (feedInd == feed.Result.Items.Count - 1)
                 {
                     return articlesList.ToArray();
                 }
                 else
                 {
-                    if (!feed.Items.ElementAt(i).Title.Equals("BBC中文合作伙伴"))
+                    if (!feed.Result.Items.ElementAt(i).Title.Equals("BBC中文合作伙伴"))
                     {
                         if (publisher.Equals("BBC Chinese") || publisher.Equals("BBC News"))
                         {
-                            articlesList.Add(new Article { Contents = BBCParse(feed.Items.ElementAt(i).Link)[0], Thumbnail = BBCParse(feed.Items.ElementAt(i).Link)[1], Publisher = publisher, URL = feed.Items.ElementAt(i).Link, Title = feed.Items.ElementAt(i).Title, Author = feed.Items.ElementAt(i).Author, DatePublished = (System.DateTime)feed.Items.ElementAt(i).PublishingDate, Summary = feed.Items.ElementAt(i).Description, Tags = feed.Items.ElementAt(i).Categories });
+                            articlesList.Add(new Article { Contents = BBCParse(feed.Result.Items.ElementAt(i).Link)[0], Thumbnail = BBCParse(feed.Result.Items.ElementAt(i).Link)[1], Publisher = publisher, URL = feed.Result.Items.ElementAt(i).Link, Title = feed.Result.Items.ElementAt(i).Title, Author = feed.Result.Items.ElementAt(i).Author, DatePublished = (System.DateTime)feed.Result.Items.ElementAt(i).PublishingDate, Summary = feed.Result.Items.ElementAt(i).Description, Tags = feed.Result.Items.ElementAt(i).Categories });
                         }
                         else
                         {
-                            articlesList.Add(new Article { Publisher = publisher, URL = feed.Items.ElementAt(i).Link, Title = feed.Items.ElementAt(i).Title, Author = feed.Items.ElementAt(i).Author, DatePublished = (System.DateTime)feed.Items.ElementAt(i).PublishingDate, Contents = feed.Items.ElementAt(i).Content, Summary = feed.Items.ElementAt(i).Description, Tags = feed.Items.ElementAt(i).Categories });
+                            articlesList.Add(new Article { Publisher = publisher, URL = feed.Result.Items.ElementAt(i).Link, Title = feed.Result.Items.ElementAt(i).Title, Author = feed.Result.Items.ElementAt(i).Author, DatePublished = (System.DateTime)feed.Result.Items.ElementAt(i).PublishingDate, Contents = feed.Result.Items.ElementAt(i).Content, Summary = feed.Result.Items.ElementAt(i).Description, Tags = feed.Result.Items.ElementAt(i).Categories });
                         }
                     }
                 }
             }
 
             /*
-            foreach (var item in feed.Items)
+            foreach (var item in feed.Result.Items)
             {
                 if (!item.Title.Equals("BBC中文合作伙伴"))
                 {

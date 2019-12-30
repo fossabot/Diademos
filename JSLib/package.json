@@ -1,0 +1,36 @@
+{
+  "name": "jslib",
+  "version": "1.0.0",
+  "description": "Diademos JavaScript files",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \\\"Error: No test specified\\\" && exit 1",
+    "build": "webpack --mode production"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/MadeByEmil/Diademos.git"
+  },
+  "keywords": [
+    "news",
+    "censorship",
+    "democracy",
+    "blazor",
+    "electron"
+  ],
+  "author": "Emil Sayahi",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/MadeByEmil/Diademos/issues"
+  },
+  "homepage": "https://github.com/MadeByEmil/Diademos#readme",
+  "dependencies": {
+    "@postlight/mercury-parser": "^2.2.0",
+    "webpack": "^4.41.5",
+    "webpack-cli": "^3.3.10"
+  },
+  "devDependencies": {
+    "@babel/core": "^7.7.7",
+    "babel-loader": "^8.0.6"
+  }
+}

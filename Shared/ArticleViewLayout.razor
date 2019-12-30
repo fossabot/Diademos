@@ -1,0 +1,119 @@
+﻿@inherits LayoutComponentBase
+
+@using Diademos.Data
+@using System.Web;
+@using System.Diagnostics;
+@using Newtonsoft.Json.Linq;
+@using System.Json;
+@inject Microsoft.AspNetCore.Components.NavigationManager NavManager
+@inject IJSRuntime JSRuntime;
+
+@if (articleContents == null)
+{
+    <div class="sk-cube-grid">
+        <div class="sk-cube sk-cube1"></div>
+        <div class="sk-cube sk-cube2"></div>
+        <div class="sk-cube sk-cube3"></div>
+        <div class="sk-cube sk-cube4"></div>
+        <div class="sk-cube sk-cube5"></div>
+        <div class="sk-cube sk-cube6"></div>
+        <div class="sk-cube sk-cube7"></div>
+        <div class="sk-cube sk-cube8"></div>
+        <div class="sk-cube sk-cube9"></div>
+    </div>
+}
+else
+{
+    <div class="viewHeader">
+        <button @onclick="@Previous">🠔</button>
+        <button @onclick="@Next">🠖</button>
+    </div>
+    <content>
+
+
+
+
+
+
+        <!--
+    foreach (var style in articleStyles)
+    {
+        @((MarkupString)style.Replace("<link", "<link itemprop=\"url\""))
+        }-->
+        <!--@((MarkupString)articleContents.Replace("本文不代表BBC的立场和观点。网友如要发表评论，请使用下表：", "").Replace("<div class=\"js-delayed-image-load\"", "<img").Replace("data-", ""))-->
+        @((MarkupString)articleContents)
+    </content>
+}
+
+@code {
+    string articleContents;
+    string[] articles, articleStyles;
+
+    [Parameter]
+    public string LayoutPublisherName { get; set; }
+    [Parameter]
+    public string LayoutFeedUrl { get; set; }
+    [Parameter]
+    public int LayoutArticleInd { get; set; }
+
+    public void Previous()
+    {
+        LayoutArticleInd--;
+        NavManager.NavigateTo("view/" + HttpUtility.UrlEncode(LayoutPublisherName).Replace("+", "%20") + "/" + HttpUtility.UrlEncode(LayoutFeedUrl) + "/" + LayoutArticleInd);
+    }
+
+    public void Next()
+    {
+        LayoutArticleInd++;
+        NavManager.NavigateTo("view/" + HttpUtility.UrlEncode(LayoutPublisherName).Replace("+", "%20") + "/" + HttpUtility.UrlEncode(LayoutFeedUrl) + "/" + LayoutArticleInd);
+    }
+
+    async Task<string> GetArticleContents()
+    {
+        Debug.WriteLine("Article HTML: " + News.GetResponseString(articles[LayoutArticleInd]));
+        return await JSRuntime.InvokeAsync<string>("JSLib.GetArticleContents", articles[LayoutArticleInd], News.GetResponseString(articles[LayoutArticleInd]));
+        //Debug.WriteLine("Article contents: " + contents);
+
+        StateHasChanged();
+
+        //return (string) JObject.Parse(contents.ToString())["content"];
+    }
+
+    protected override bool ShouldRender()
+    {
+        var renderUI = true;
+
+        return renderUI;
+    }
+
+    protected override async Task OnInitializedAsync()
+    {
+        //LayoutArticleInd = 1;
+        //LayoutFeedUrl = HttpUtility.UrlDecode(LayoutFeedUrl);
+        //LayoutPublisherName = HttpUtility.UrlDecode(LayoutPublisherName);
+        /*
+        if (LayoutFeedUrl.Equals(""))
+        {
+            LayoutFeedUrl = "http://www.bbc.co.uk/zhongwen/simp/taiwan_letters/index.xml";
+        }
+        else
+        {
+            //LayoutFeedUrl = "http://www.bbc.co.uk/zhongwen/simp/taiwan_letters/index.xml";
+        }
+        if (LayoutPublisherName.Equals(""))
+        {
+            LayoutPublisherName = "BBC Chinese";
+        }
+        else
+        {
+            //LayoutPublisherName = "BBC Chinese";
+        }
+        */
+        articles = await News.GetArticleUrls(LayoutFeedUrl);
+        //articleStyles = await News.GetArticleCSS(News.GetResponseString(articles[LayoutArticleInd]), LayoutPublisherName);
+        articleContents = await GetArticleContents();
+
+
+        //articleContents = await News.GetContents(articles[LayoutArticleInd], LayoutPublisherName);
+    }
+}

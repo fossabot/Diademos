@@ -1,0 +1,14 @@
+﻿@inject Microsoft.AspNetCore.Components.NavigationManager NavManager
+@page "/view/{publisherName}/{feedUrl}/{articleInd:int}"
+@using System.Web;
+
+<ArticleViewLayout LayoutPublisherName="@HttpUtility.UrlDecode(publisherName)" LayoutFeedUrl="@HttpUtility.UrlDecode(feedUrl)" LayoutArticleInd="@articleInd"></ArticleViewLayout>
+
+@code {
+    [Parameter]
+    public string publisherName { get; set; }
+    [Parameter]
+    public string feedUrl { get; set; }
+    [Parameter]
+    public int articleInd { get; set; }
+}
