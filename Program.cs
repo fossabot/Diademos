@@ -8,6 +8,7 @@ using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
+using Sentry;
 
 namespace Diademos
 {
@@ -15,7 +16,10 @@ namespace Diademos
     {
         public static void Main(string[] args)
         {
-            CreateHostBuilder(args).Build().Run();
+            using (SentrySdk.Init("https://efa19c83b8774d83a178fd8f5ba285a7@sentry.io/1868429"))
+            {
+                CreateHostBuilder(args).Build().Run();
+            }
         }
 
         public static IHostBuilder CreateHostBuilder(string[] args) =>
