@@ -24,4 +24,4 @@ jobs:
         # Artifact name
         name: diademos.ubuntu.tar.gz
         # Directory containing files to upload
-        path: ./bin/desktop/
+        path: ./bin/Desktop/
