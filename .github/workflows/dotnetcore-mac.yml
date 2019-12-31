@@ -15,7 +15,7 @@ jobs:
         dotnet-version: 3.1.100
     - name: Build with dotnet
       run: |
-        dotnet tool install ElectronNET.CLI -g
+        dotnet tool install ElectronNET.CLI
         dotnet build --configuration Release
         electronize build /target osx
     - name: Upload artifact
