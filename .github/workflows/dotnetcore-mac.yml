@@ -14,7 +14,10 @@ jobs:
       with:
         dotnet-version: 3.1.100
     - name: Build with dotnet
-      run: dotnet tool install ElectronNET.CLI -g, dotnet build --configuration Release, electronize build /target osx
+      run: |
+        dotnet tool install ElectronNET.CLI -g
+        dotnet build --configuration Release
+        electronize build /target osx
     - name: Upload artifact
       uses: actions/upload-artifact@v1.0.0
       with:
