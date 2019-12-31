@@ -12,6 +12,7 @@ using Microsoft.Extensions.Hosting;
 using Diademos.Data;
 using Microsoft.AspNetCore.SignalR;
 using Microsoft.AspNetCore.Http.Connections;
+using ElectronNET.API;
 
 namespace Diademos
 {
@@ -80,6 +81,7 @@ namespace Diademos
                 });
                 endpoints.MapFallbackToPage("/_Host");
             });
+            Electron.WindowManager.CreateWindowAsync();
         }
     }
 }
