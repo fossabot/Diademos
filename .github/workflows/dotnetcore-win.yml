@@ -17,7 +17,7 @@ jobs:
       run: |
         dotnet tool install ElectronNET.CLI
         dotnet build --configuration Release
-        electronize build /target win
+        dotnet electronize build /target win
     - name: Upload artifact
       uses: actions/upload-artifact@v1.0.0
       with:
