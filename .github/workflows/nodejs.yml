@@ -31,4 +31,4 @@ jobs:
         # Artifact name
         name: js_lib.js
         # Directory containing files to upload
-        path: /artifacts/
+        path: ../artifacts/
