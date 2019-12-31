@@ -9,7 +9,7 @@ Diademos is a news aggregator that bypasses internet censorship to provide artic
 ## Building from source:
 Pre-requisites:
 - [.NET Core SDK 3.1](https://dotnet.microsoft.com/download/dotnet-core/3.1)
-- [NodeJS](https://nodejs.org/en/download/)
+- [Node.js](https://nodejs.org/en/download/)
 
 ### Windows
 ```
