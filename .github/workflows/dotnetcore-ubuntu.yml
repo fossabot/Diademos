@@ -19,6 +19,6 @@ jobs:
       uses: actions/upload-artifact@v1.0.0
       with:
         # Artifact name
-        name: diademos.ubuntu
+        name: diademos.ubuntu.tar.gz
         # Directory containing files to upload
         path: ./artifacts
