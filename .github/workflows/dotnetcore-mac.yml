@@ -21,4 +21,4 @@ jobs:
         # Artifact name
         name: diademos.mac.tar.gz
         # Directory containing files to upload
-        path: .\Diademos\bin\Release\
+        path: ./bin/Release/
